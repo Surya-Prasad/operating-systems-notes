@@ -1,0 +1,65 @@
+## Distributed Systems
+	- Multiple machines working together
+	- Nothing is shared between them
+-
+- ## Synchronization between Distributed Systems
+	- The whole purpose of clocks is to be able to synchronize across activities
+	- But each instance of a clock has to be synchronized
+-
+- Leslie Lamport is the first person to attempt to do this
+	- https://en.wikipedia.org/wiki/Leslie_Lamport
+-
+- ## Ordering of Events
+	- This is needed to ensure correctness of execution
+		- Eg: If money is credited before debit, problem lol
+	- Two Broad Approaches
+		- Causality
+			- If an event happened before the other, the former caused the latter
+			- We have a partial ordering in this case
+		- Timestamps
+			- Let there be a global clock (If we have it)
+			- Then we can associate the timestamp with it and say something came before the other
+			- We get a total ordering in this case
+	- Clocks are not easy to implement in a distributed system since not everyone sees a global clock to agree upon ordering of events. So there will be issues such as:
+		- Clock drift
+		- Measurement errors
+	- So we will use Causality to implement clocks - called Lampent Clocks
+-
+- ## System Model
+	- **System** is a set of processes running concurrently across different nodes
+	- Processes can exchange messages
+	- **Process** is a sequence of events
+	- **Events** are instruction execution + Sends of messages + Receives of messages
+		- Each event can be a local event (have nothing to do with sending or receiving) and additionally, a send or receive of a message
+-
+- ## Partial Ordering (Causality)
+	- We try to order events across two distributed sources and try to get a total ordering
+	- Define Partial Order as follows
+		- `A -> B`: If `A` and `B` are events within a process, and `A` comes before `B`, then `A` -> `B`
+		- If `A` is the sending of a message by some process and `B` is the receipt of the same message by another process, then `A` -> `B` (Receive always comes before a send)
+		- This obeys transitive property: If A happens before B and B happens before C, then A happens before C. We can apply this *across distributed systems!*
+			- Across two distributed systems, the clock might not be synced. So timestamps do not mean anything
+-
+- Now that we have a partial ordering, how do we get a total ordering out of this?
+-
+- ## Logical Clocks
+	- Associate a local clock $C_i$ with each process $P_i$
+	- And we want this to obey the partial order obtained earlier
+	- If $C_{i}(a) < P_{i}(a)$
+	- Each P_i increments it's C_i between any 2 successive local events
+	- If A is the sending of the message by Pi and B is the receipt of the message at Pj, then
+		- If the timestamp of the receive is greater than send and the timestamp of the instruction preceeding it, let it be
+		- But if not, set it to that of send + 1
+		- Pj sets $C_j(B) = max(C_j, C_i(A) + 1)$
+	- Let us say that the system says that Event A with timestamp 3 happened before Event B on timestamp 8
+		- We cannot prove the system wrong here
+		- It could be that it executed it that way
+		- We would have to accept this, because trying to prove this, would change the system
+	- So, we are assuming that there are multiple such ways to execute this order
+	- How do we get Total Order/How do we order all events and make sure everyone sees the same order?
+		- Sort all events based on their logical clock values
+		- When there are ties, use some deterministic rule to break those ties (eg: highest process id wins).
+	- We will get a total order from this
+		- But. there could be several total orders from the partial order specified by causaluty, but you cannot prove that events cannot happen that way
+		- So the "Right Order" does not matter, only that all of them agree on one
+	-

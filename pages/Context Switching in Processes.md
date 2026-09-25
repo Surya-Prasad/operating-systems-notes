@@ -1,0 +1,50 @@
+- State or Context of a Process
+	- Code Segment + Data Segment + Stack Segment + Heap Segment = Context
+	- Program Counter (PC) - What instruction to execute next
+	- Stack Pointer (SP) - Top of Stack
+	- Heap Pointer (HP)
+	- Other Registers
+	- Other State info maintained by OS
+		- Eg: Open Files, Book-Keeping Info, etc
+	- Process Sharing
+		- Time Sharing - Same resources can be shared across time slices
+		- Spatial Sharing - We split the resource into subparts which can be shared across processes/threads
+	- So sharing is based on process state storage and restoration
+-
+- State Storage
+	- All the states data is accessible from PCB (Process Control Block) of the process in the OS
+-
+- Context Switching
+	- This is the routine that gets executed when an interrupt is encountered
+	- Purpose
+		- Let there be two processes A and B containing a set of instructions to execute (Machine-level)
+		- If Process A is executing instr A1 and we want to switch to Process B (interrupt)
+		- So we need to interrupt A and then switch context, the procedure is asynchronous (Can happen at any time) - So we won't know when to save state!
+		- This is the purpose of Context Switching
+	- Aka ISR - Interrupt Service Routine
+		- So A will run for X ms, then context switcher kicks in, and then B runs for Y ms
+		- When a process is created, the ISR table gets updated. The ISR table has a bunch of interrupts that will go off at the specified times
+	- When should a process get interrupted
+		- Each instruction takes some time (cycles)
+		- Interrupts are only executed at instruction boundaries - the instruction has to finish execution to be interrupted
+		- After instruction finishes executing, the PC is then sent to the address of the process in the ISR table and the context switches
+		- So all the interrupts wait till the end of the instruction to execute, WITH THE SOLE EXCEPTION OF PAGE FAULT interrupt, which restarts at the top of the instr (flush instruction and restart instruction)
+	- Step by step
+		- Each process has it's own Stack
+		- The top of each process stack would be the next instruction
+		- Step 1: PC is pushed on the top of the stack. (points to A2)
+			- This has to be hardware because if the software does this, by this time the PC has already changed
+		- Step 2: Save the state of A1 -> As simple as pushing all the registers onto the stack and then having a pointer to stack in the PCB
+			- will look like push r0; push r1; ...
+			- Then save Stack Pointer (SP) onto PCB
+			- Then save Code Seg onto PCB
+			- Then save Data Seg onto PCB
+			- Then save StackSeg into PCB
+			- Then save HeapSeg into PCB
+			- THERE IS NO POINT SAVING PC  -> At this point, it would be like trying to save an address already in the context switcher -> We would lose track of where we came from
+		- Step 3: Find next process to run using schedule()
+		- Step 4: Set CPU's registers to CodeSeg, DataSeg, StackSeg and Heapseg in turn (of the next process)
+		- Step 5: Reassign stack pointer to that of the other process (Switching Stacks)
+		- Step 6: Pop off all the registers from stack to recover state
+			- Finish process
+		- Step 7: Return to another process

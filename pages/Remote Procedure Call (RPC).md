@@ -1,0 +1,63 @@
+- We need to communicate between the threads/processes/entities
+- The first project does this with sockets
+	- We can say that I'm sending you something
+	- But how can we say that I need something from you? You would always have to be listening
+	- Sockets are called explicit communication
+- We don't want to ask someone else when we need something in shared memory. The resource just reaches out and gets it.
+- What are the kinds of abstraction that we want to make programming simple?
+-
+- ## Goals
+	- Easy to use
+		- Make programming simple
+		- Close to normal procedure calls
+		- We need to write procedures/functions as part of class def/data structures and call them. We want to have the same interface, but for remote systems.
+	- Efficient Communication
+		- Close to hardware transmission time
+	- Secure Communication
+-
+- ## Structure
+	- In the same system call, everything has access to everything
+	- But on separate systems, nothing is shared.
+		- Say first machine has `X = call foo(a,b)`, called Client
+		- And second machine has the 
+		  ```c
+		  foo (p,q) {
+		    ...
+		  }
+		  ```
+		  Called the server
+		- How do we share global data with the remote system? There are some programming languages (like LISP) that forbids localizing global variables on the second local machine, so we can't just migrate just like that.
+	- We create a dummy foo on the Client, called a stub (`cstub`).
+		- The stub will have a function header, with the arguments and such
+		- It will take the arguments and the data, pack it into a message and send it to the remote machine
+	- This is a P2P UDP message being sent out
+	- At the Server, there is another dummy stub called `sstub`
+		- This takes the arguments and the data from the message and makes a function call to `foo()` present on the server
+		- There might be multiple functions declared, so the `sstub` does demultiplexing
+		- Then takes the results from `foo()`, packs it into a message and sends it to the client stub
+	- Client stub recieves the message and sends it to the client function call
+	- From the perspective of Machine01, `cstub` answers the function call
+	- This absolves the programming difficulty of the user having to write a function call
+-
+- ## How to make this happen?
+	- Workflow
+		- `Client` -> `cstub` -> Client Runtime `crt`
+		- Server Runtime `srt` -> `sstub` -> `Server`
+	-
+- ## Functionality
+	- Pack the arguments from the caller into a message: Client Stub
+	- Send the call/args to server handling transmission issues: Client Runtime
+	- Receive the call/args, find out who it is for, and pass it on: Server Runtime
+	- ...
+-
+- Theoretically, we should be able to link the two machines, compile them and run, it should not be any different from a local function call
+- The type constraints, packing and such falls on the user
+	- Packing one data type and unpacking as another
+	- Byte order
+	- Little Endian and Big Endian
+	- Network oblivious versions should be sent
+-
+- In real machines, multiple servers and clients would be running for multiple functions
+- Runtime is hiding the details of the transport mechanism
+- Stubs hide the remote procedure call
+-

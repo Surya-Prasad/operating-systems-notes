@@ -1,0 +1,43 @@
+- Cost of Transformers
+	- Attention calculation is O(N^2) with N input tokens
+	- Claude Opus 5 supports up to 1M tokens (it can read books or Wiki pages)
+	- You do this calculation on every token generation
+	- So it might even do 1M x 1M token calcs
+	- Optimizations: KV-Cache
+- Optimization
+	- Prefill
+		- Initial processing of inputs (system prompt, questions, documents)
+	- Decode
+		- Iterative token-by-token generation (Generating response)
+-
+-
+- Performance Metrics
+	- Time to First Token (TTFT)
+		- Time between you send first request and time for first token to be generated
+		- Prefill is very relevant to this
+		- If this is very slow, user engagement drops
+		- Has to be fast
+	- Time-per-output-token (TPOT)
+		- Time between one token generation to second token generation
+		- Can just be faster than reading speed
+	- Completion Latency
+		- Time to submit request and time for the final token to be generated
+	- Balancing both is important
+-
+- KV-Cache
+	- Prefill cannot really be optimized (you do O($N^2$) attention computation
+	- But decode can be optimized with KV cache
+	- Caches the redundant vectors and only computes the new ones
+	- Key and Value vectors are saved and Q vectors are recalculated
+	- We don't need to cache the query vectors --> If K and V are stored, Q just needs to be passed on (?)
+	- Changes compute overhead from O($N^2$) to O(N)
+	- Trade-offs
+		- KV vectors are huge
+		- KV cache improves compute but needs a lot of memory
+		- Prefill is usually compute bound --> You need more powerful GPUs
+		- Decode is heavily memory bound --> You need faster memory --> Bottleneck --> Moore's law, compute is very fast but memory cannot be made faster very easily
+		- Usually decode phase is the main bottleneck (with some caveats)
+			- You can parallelize prefill (GPU is good at it) but decode should happen one-by-one
+		- Most systems problems for LLMs is a memory problem
+- Other costs
+	- Less interesting but MLP (FFN) compute is also non-negligible

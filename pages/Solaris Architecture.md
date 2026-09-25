@@ -1,0 +1,51 @@
+- History
+	- Sun Microsystems - Acquired by Oracle now
+		- Tried to build an OS with both user and kernel level threads
+		- Kernel level threads are synonymous with LightWeight Processes (LWP)
+- Two level threaded implementation
+	- Missed this, need to brush up
+- User Level Scheduling
+	- Idle processes are in a `READY` state
+	- All these user threads that are in `READY` state are in a queue, waiting to be given CPU time
+	- Then they get picked up and are put in `RUNNING`
+	- State diagram is used to represent what state it is in
+- The solaris paper has the following states
+	- `RUNNABLE`: When CPU is given, it can run
+	- `SLEEPING`: When CPU is given, it still cannot run. It will wait. (aka `BLOCKED`)
+	- `ACTIVE`: They are running
+	- `STOPPED`: Dead
+	- Both `RUNNABLE` and `SLEEPING` can be processes/threads that have already started
+- Actions:
+	- `Dispatch`: When an LWP picks up a `RUNNABLE`, it changes to `ACTIVE`.
+	- `Preempt`: When an `ACTIVE` state is taken to `RUNNABLE`.
+	- `Wakeup`: When `SLEEPING` goes to `RUNNABLE`. For Eg: a signal is sent to another process.
+	- `Continue`: `STOPPED` to `RUNNABLE`
+	- `Stop`: All other states except `ACTIVE` to `SLEEPING`.
+	- The OS does not know about User Level Threads. So when it blocks an syscall, it will actually block the LWP. So User-Level threads can never go from `ACTIVE` to `SLEEPING`. The User-Level Sync variable could be blocked and that could be a reason why the LWP gets blocked
+	- Try writing the state transition diagram as a (KERNEL STATE, USER STATE) tuple. There will be a 3x3 table.
+	- Much of the time, we will be scheduling User Level Threads on LWPs - Much less overhead than Kernel Level
+-
+- TODO Write a simple signal handler to capture an alarm periodically
+-
+- `SIGWAITING`
+	- What happens when all the LWP processes are blocked in the kernel?
+		- Solaris provides a hook for handlers called SIGWAITING signal
+		- Asynchronous way of notifying the process that all LWPs are blocked
+		- User writes a signal handler to capture SIGWAITING
+		- You can choose to add create LWPs if needed
+			- There is a fairness mechanism in the OS to regulate LWPs
+		- This is a way of avoiding the problem of the kernel being ignorant of the workload within the process
+-
+- A Common System Design Problem
+	- Compsci is built on abstractions
+		- But sometimes that means we lose visibility
+		- For example:
+			- Hardware (most) do not implement multiplication - Use repeated addition instead
+			- But this example is not visible to the user, who would write better code
+	- We have two principles:
+		- Layer, Abstractions and Virtualization are important to preserve independent innovations and advancements
+		- Cross-Layer informations is vital for optimizations
+	- How do we achieve the first one without compromising on the second?
+	-
+	-
+	-

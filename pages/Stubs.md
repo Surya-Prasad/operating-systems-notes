@@ -1,0 +1,118 @@
+- It is very specific to a specific client/server
+- It is not a catch-all
+- We need that level of granularity of a function to capture every single parameter of a function
+- We have to generate a stub for every function
+- We don't want to burden the user to write 'stubs' for their functions: Automate this
+- We are going to use a compiler for the process
+-
+- ## RPC Compiler
+	- Lupine, IDL
+	- How do you know how many parameters are used in the function and generate the stub?
+		- Similar to how header files are used to compile different variations of user functions, we use a common `.h` file here
+	- User should supply an interface definition, which include
+		- Procedure name
+		- Argument Types
+		- Return Values
+	- Many times you can automatically do this (Compilers use this for type checking)
+	- This brings about standardization
+		- Promotes multiple users writing different chunks of the program
+		- Client and server does not have to be written by the same person
+		- Allows heterogeneity of clients and servers
+-
+- ## Binding
+	- We do not want to burden the caller to specify the server
+		- Eg: Get me the file from server X
+		- It should be transparent
+	- How do you know on which machine is the callee?
+		- We cannot have the server go after the client
+			- We can have misbehavior
+			- Clients can go down
+			- Servers should be stateless
+	- If there are several callees, which one should I invoke?
+	- Making the association between caller and callee is called ***Binding***
+	- Client should just specify the instance (service name)
+	- If wanted, they can also specify the instance of that service (not required!)
+	- To find the server offering that service,
+		- We need a Name Service
+		- We need a mapping from `service` -> `machine_id`
+		- Aka Network Information Service (NIS), Grapevine, etc
+		- "mailserver" : "m1", "m2"
+	- How does the nameserver get populated?
+-
+- ## Steps in Binding
+	- ### Server Side
+		- Server calls `export()` in sstub
+		- We will declare service as `(type, instance)`
+		- sstub calls ExportInterface(type, instance, dispatcher) in Server Runtime (srt)
+		- Dispatcher
+			- It is a notification mechanism that tells the function that _"you have a caller"_.
+			- Or for telling the server runtime as "Please inform me when I have a process"
+			- Could be a port number, for instance
+			- When the packet comes to a server, it demuxes
+			- Then it passes the message on to the service
+		- ExportInterface() sends a message to Grapevine and registers the server
+		- srt maintains a table about all services that are exported out of that machine
+		- Table Contains
+		  <Interface, Dispatcher, machine_unique_id>
+			- machine_unique_id is a non-repeatable ID.
+			- It is so because we need to find staleness - What if the ID I have is no longer used by others
+	- ### Client Side
+		- Client calls import() in stub
+		- cstub calls ImportInterface(type, interface) in crt
+		- crt sends a message to Grapevine
+		- grapevine responds back with network address of exporter
+		- crt sends message to srt asking for binding information
+		- srt looks up the table and returns back unique ID and table index
+		- cstub stores <network addr, unique_id, table_index>
+			- This tuple is called the binding information
+			- This is similar to a file descriptor (a single row of a table holding information about all potential files open).
+				- `open()` system call is used to check permissions. It is very inefficient to check permissions on each level. So `open()` does authorization stored so that `read()` and `write()`.
+				- So binding is also akin to authorization so that subsequent operations can be used without auth
+-
+- ## Issues with Binding
+	- Can only bind to procedures exported
+	- ### Stateless Server
+		- The server is going to service a lot of clients
+		- Can be one-to-many
+		- Service needs to be resilient
+		- Servers bound to go down when not implemented correctly
+		- If the server keeps track of multiple client states, it is bound to be a problem
+		- If server is reliant of the client information
+			- Say one client is at offset 100, and the server keeps track of that
+			- If one side goes down, it causes issues
+		- So we do not want the server to have any information about any client
+	- The table that we mentioned before is information about the server, not that of the client
+		- In this context, the purpose of machine_unique_id is to find if the service has crashed or not, between successive calls
+		- If the ID changed, that means that the service has crashed and come back up
+		- If the machine_unique_id changes, then the server rejects the call and says rebind
+	- We need to enforce security at Grapevine to ensure only authorized client/servers are importing/exporting the interface
+-
+- So far, we have tied the knot and made sure that the client is authorized to use the service
+-
+- ## Calls
+	- The flow has been
+		- The stub is generated based on the procedure
+		- The stub is going to take a <bindinfo, args> and send to crt
+		- The crt will be taking the bindinfo, callid, args and make a call to the server
+		- The server will then call the dispatcher, and then route to the relevant sstub and the procedure
+		- The sstub sends a <callid, retvals>, which srt forwards to crt
+	- The callID is going to be
+		- `call_id = Activity_ID (Machine_ID + Process_ID) + seq_num`
+		- Call_ID is used to track which sstub or cstub the request came from
+-
+- ## Unreliable Communication Mediums
+	- Problems with TCP for communication
+		- Wasted calls
+			- When we send a call, we know that we are going to receive a result/response. Why ACK in this case?
+	- We want to use the return packet as a ACK for the call
+	- But estimating the timeout window is tricky
+		- If too small, then duplicate acks sent
+		- If too large, then slower
+	- So highly specialized transport mechanisms are preferred over TCP, which is highly inefficient
+-
+- How do we detect duplicate calls packets and discard them?
+	- Call_ID is going to be used here
+	- It can be used akin to sequence number
+	- But the tradeoff there is that call_id is going to be information of the client
+	- And the server becomes stateful
+- So real systems store these, sync up with the clients every now and then, but also flush them periodically

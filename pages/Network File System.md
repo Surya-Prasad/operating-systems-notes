@@ -1,0 +1,2 @@
+- NFS is basically an interface file which has a bunch of functions that the clients can avail
+-
