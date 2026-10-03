@@ -37,7 +37,7 @@
 		- However, system calls are trapped into the operating system and run in the OS - Involves a protection privilege switch and runs in privileged mode
 	- When multiple processes use the same library, rather than copying it, OSes just manipulate page tables to point to the same library, even though logically each process is separately calling it's own library
 	- Can you create threads without actually using system calls?
-		- If we think about it, we just need CodeSeg gang, not the resource of a process
+		- If we think about it, we just need context, not the resource of a process
 		- We don't need a system call for it, we can do it using assembly and C
 		- Try it
 	- Multithreaded programs

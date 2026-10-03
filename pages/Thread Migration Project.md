@@ -1,0 +1,13 @@
+- Parent thread is thread executing pthread_create
+- Child Thread is executing foo
+- Pointer References:
+	- PC
+		- Next instruction to be executed
+		- Points to LoC
+	- Stack Pointer
+		- End of active stack
+		- Somewhere inside child thread's stack
+	- Base Pointer / Frame Pointer
+		- Points to address of frame
+		- Stable reference point for stack frame
+- ucontext_t - snapshot of stack registers and values

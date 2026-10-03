@@ -1,0 +1,11 @@
+## Building a Sequentially Consistent DSM
+	- We need to ensure
+		- Write Propogation
+			- Find out who has copies (If there is only one copy, performance is going to be terrible)
+			- So we can propagate the write to all copies
+		- Read/Write Atomicity
+			- While a load/store is going on, it has to be atomic
+			- Any interleaves are fine, as long as the sequence does not get interrupted
+	- Making sure all the copies have the same value
+		- Mechanisms to achieve this are called coherence protocols in systems
+		-
