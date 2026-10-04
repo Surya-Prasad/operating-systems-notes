@@ -12,5 +12,5 @@
 		- Stable reference point for stack frame
 - ucontext_t - snapshot of stack registers and values
 - [#A] So we need to find a code base of reference and a stack base of reference
-- ```gcc -D_GNU_SOURCE -Wall -Wextra -g app1.c -o app1 -pthread```
+-
 -
