@@ -27,7 +27,9 @@
 -
 - Program Counter
 	- Always points to the next instruction
-	- Gets updated at the beginning of an instruction execution (the FETCH cycle)
+	- Gets updated at the beginning of an instruction execution (the FETCH cycle)\
+-
+-
 	-
 	-
 	-

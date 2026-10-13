@@ -12,7 +12,7 @@
 	- So sharing is based on process state storage and restoration
 -
 - State Storage
-	- All the states data is accessible from PCB (Process Control Block) of the process in the OS
+	- All the state data is accessible from PCB (Process Control Block) of the process in the OS
 -
 - Context Switching
 	- This is the routine that gets executed when an interrupt is encountered
@@ -21,7 +21,7 @@
 		- If Process A is executing instr A1 and we want to switch to Process B (interrupt)
 		- So we need to interrupt A and then switch context, the procedure is asynchronous (Can happen at any time) - So we won't know when to save state!
 		- This is the purpose of Context Switching
-	- Aka ISR - Interrupt Service Routine
+	- Similar to ISR - Interrupt Service Routine
 		- So A will run for X ms, then context switcher kicks in, and then B runs for Y ms
 		- When a process is created, the ISR table gets updated. The ISR table has a bunch of interrupts that will go off at the specified times
 	- When should a process get interrupted
