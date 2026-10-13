@@ -185,7 +185,7 @@
 			  
 			  Unlock(myplace) {
 			    // We only invalidate (unlock) the array index that we want to address
-			    flags[myplace + 1 % P] = HAS_LOCK;
+			    flags[(myplace + 1) % P] = HAS_LOCK;
 			  }
 			  ```
 			- We are still trying to update the array addresses
