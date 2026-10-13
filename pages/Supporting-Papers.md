@@ -80,37 +80,41 @@
 	  Drift concerns clock rate; skew concerns differences between readings.
 -
 - ## Ricart and Agrawala’s *“An Optimal Algorithm for Mutual Exclusion in Computer Networks” (1981)*.
-- Core Idea: Ask everyone for permission, each node replies immediately or defers until your turn
-- Information Kept: 
-  
-  | Variable | Meaning |
-  |---|---|
-  | `Highest_Sequence_Number` | Highest request number seen or chosen |
-  | `Our_Sequence_Number` | Number assigned to our current request |
-  | `Requesting_Critical_Section` | True while requesting **and while inside** the critical section |
-  | `Outstanding_Reply_Count` | Number of permissions still missing |
-  | `Reply_Deferred[j]` | Whether we owe node \(j\) a reply |
-- ### Algorithm
-	- While Requesting:
-	  ```
-	  Choose our req_no as highest_req_no + 1
-	  Mark ourselves as requesting
-	  Send REQUEST(req_no, node_ID) to everyone else
-	  Enter CS after receiving all N - 1 replies
-	  ```
-	- While receiving request, 
+	- Core Idea: Ask everyone for permission, each node replies immediately or defers until your turn
+	- Information Kept: 
 	  
-	  ```
-	  Update highest number seen
-	  If neither waiting nor inside cs : Reply immediately
-	  If inside CS : Defer till done before replying
-	  If waiting, incoming request has priority : Reply immediately
-	  If Waiting but our request has priority : Defer
-	  ```
-	- When leaving:
-	  ```
-	  Stop requesting
-	  Send all deferred replies
-	  ```
+	  | Variable | Meaning |
+	  |---|---|
+	  | `Highest_Sequence_Number` | Highest request number seen or chosen |
+	  | `Our_Sequence_Number` | Number assigned to our current request |
+	  | `Requesting_Critical_Section` | True while requesting **and while inside** the critical section |
+	  | `Outstanding_Reply_Count` | Number of permissions still missing |
+	  | `Reply_Deferred[j]` | Whether we owe node \(j\) a reply |
+	- ### Algorithm
+		- While Requesting:
+		  ```
+		  Choose our req_no as highest_req_no + 1
+		  Mark ourselves as requesting
+		  Send REQUEST(req_no, node_ID) to everyone else
+		  Enter CS after receiving all N - 1 replies
+		  ```
+		- While receiving request, 
+		  
+		  ```
+		  Update highest number seen
+		  If neither waiting nor inside cs : Reply immediately
+		  If inside CS : Defer till done before replying
+		  If waiting, incoming request has priority : Reply immediately
+		  If Waiting but our request has priority : Defer
+		  ```
+		- When leaving:
+		  ```
+		  Stop requesting
+		  Send all deferred replies
+		  ```
+	- **When do you defer a reply?**
+	  While inside CS, or while waiting with a higher-priority request.
 -
+- ## Suzuki and Kasami’s *“A Distributed Mutual Exclusion Algorithm” (1985)*.
+- Core idea: one token grants permission to enter the critical section. Broadcast requests tell the token holder who needs it next.
 -
