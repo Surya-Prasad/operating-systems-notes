@@ -60,4 +60,3 @@
 - In real machines, multiple servers and clients would be running for multiple functions
 - Runtime is hiding the details of the transport mechanism
 - Stubs hide the remote procedure call
--

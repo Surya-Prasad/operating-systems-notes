@@ -42,8 +42,10 @@
 			- P1 will give it to P2 because P1 saw that first
 			- And we cannot prove P1 otherwise (Lamport clock)
 	- ### Case 2
-		- If P3 reaches P2
+		- If P3 sends multiple messages, just because the later message arrived first does not mean that it can be treated as such
+		- How to address an earlier message still in transit?
 	- ### Case 3
+	- If P1 has a request outbound to P2, so both of them are requesting for the resource even though P1's message has not reached P2 yet
 -
 - ## Using Lamport Clocks
 	- Firstly, we need to ensure that the messages are seen by everyone
@@ -68,7 +70,7 @@
 			- $P_i$ has received a message from every other process timestamped greater than it's time of request
 		- Dequeueing
 			- When a process is done with resource, it sends a timestamped `RELEASE` message to everyone
-			- When Pi receives a `RELEASE` From Pj, it removes Pj from it's local queue
+			- When $P_i$ receives a `RELEASE` From $P_j$, it removes $P_j$ from it's local queue
 	- ### Correctness
 		- By contradiction
 			- TODO Try it out
