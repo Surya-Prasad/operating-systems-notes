@@ -99,34 +99,46 @@
 		- There is a similar problem in Networks
 			- Ethernet, which is a bus
 			- So, we borrow the idea, and back off and retry later, hoping it is random enough that I don't collide
-	- ### Delay after Spinning Processor Notices Lock is released
-		- Code
-		  ```c
-		  x = CLEAR;
-		  lock() {
-		    while(x == BUSY || test&set(x) == BUSY) {
-		      while(x == BUSY); //As long as this is busy, we wait
-		      Delay(); //When it is free, don't try. Delay further
-		    } //The next loop will try and get it
-		  }
-		  unlock() {
-		    x = CLEAR;
-		  }
-		  ```
-		- Problems
-			- Delay based solutions are not necessarily the best solutions
-			- In invalidation based schemes, the local busy wait may still incur misses (even if unsuccessful) because of other attempts
-				- We assume that it is still unlocked right after exiting the inner loop.
-				- But it might still incur a cache miss
-	- ### Delay between each memory reference
-		- For invalidation based schemes
-		- Code (missed out)
-		  ```c
-		  ```
-		- When do you think this would perform better than the earlier mechanism?
-			- Possible exam question
-			- It is possible that the frequency of subsequent reads is lesser than
-	- Approaches 3 and 4 are highly conservative and not really something we want to have
+	- ## Spinlocks: Delays
+		- ### Delay after Spinning Processor Notices Lock is released
+			- Code
+			  ```c
+			  x = CLEAR;
+			  lock() {
+			    while(x == BUSY || test&set(x) == BUSY) {
+			      while(x == BUSY); //As long as this is busy, we wait
+			      Delay(); //When it is free, don't try. Delay further
+			    } //The next loop will try and get it
+			  }
+			  unlock() {
+			    x = CLEAR;
+			  }
+			  ```
+			- Problems
+				- Delay based solutions are not necessarily the best solutions
+				- In invalidation based schemes, the local busy wait may still incur misses (even if unsuccessful) because of other attempts
+					- We assume that it is still unlocked right after exiting the inner loop.
+					- But it might still incur a cache miss
+		- ### Delay between each memory reference
+			- For invalidation based schemes
+			- Code
+			- ```c
+			  lock() {
+			    while(x == BUSY || test&set(x) == BUSY) {
+			      Delay();
+			    }
+			  }
+			  
+			  unlock() {
+			    x = CLEAR;
+			  }
+			  ```
+			- When do you think this would perform better than the earlier mechanism?
+				- Possible exam question
+				- So when the polling itself creates expensive traffic, reference is better than release
+				- For example, when many cores try and acquire the lock, they repeatedly update the lock's cache line, which means that spinning locks would have to reload it. Delaying between those checks reduces the reloads but delaying only after detecting release does not reducing the polling.
+			- It is possible that the frequency of subsequent reads is
+		- Approaches 3 and 4 are highly conservative and not really something we want to have
 	- ## Spinlocks: Queueing
 		- In the approaches before this, everyone has an equal chance to get the lock. So everyone tries for the lock at once
 		- We can just make one of them try and get the lock at a time
@@ -261,3 +273,16 @@
 			- This is good because
 				- You only look out for your node
 				- No false sharing problem
+-
+- ## Summary
+	- Summary:
+	  
+	  | Approach | How it works | What it lacks | What the next approach addresses |
+	  |---|---|---|---|
+	  | **Test-and-set (TAS)** | Repeatedly attempts atomic acquisition. | Failed attempts still demand write ownership, causing heavy coherence traffic. | **Test-test-and-set** uses ordinary reads while the lock is busy. |
+	  | **Test-test-and-set (TTAS)** | Reads until apparently free, then attempts atomic acquisition. | On release, many waiters attempt acquisition together. | **Delay after detecting release** spreads out their attempts. |
+	  | **Delay after detecting release** | Waits before attempting acquisition after observing availability. | Frequent polling can still cause misses during contention. | **Delay between references** also reduces checking frequency. |
+	  | **Delay between references** | Spaces out reads and acquisition attempts. | Delay needs tuning; acquisition order is unpredictable and starvation remains possible. | **Ticket locks** establish FIFO order. |
+	  | **Ticket lock** | Issues unique tickets; everyone watches `now_serving`. | Every release changes the same location watched by all waiters. | **Anderson locks** give each queue position a separate flag. |
+	  | **Anderson array lock** | Each waiter watches its slot; release enables the next slot. | Requires a sufficiently large, padded array **per lock**; local placement is less flexible. | **MCS locks** use individually allocated queue nodes. |
+	-

@@ -3,7 +3,19 @@
 		- Tried to build an OS with both user and kernel level threads
 		- Kernel level threads are synonymous with LightWeight Processes (LWP)
 - Two level threaded implementation
-	- Missed this, need to brush up
+	- Comparison of models
+	  
+	  | Model | Benefit | Limitation |
+	  |---|---|---|
+	  | Many user threads on one kernel thread | Cheap switching within the program | A blocking syscall can stall everything; no multicore parallelism |
+	  | One kernel thread per user thread | Independent blocking and multicore execution | Kernel management for every thread |
+	  | Solaris’s older many-to-many model | Many user threads share several kernel execution resources | Two schedulers must coordinate |
+	- Components
+		- User Thread: managed by thread library
+		- LWP: Lightweight Process, mapped to one kernel thread, used to run user thread on
+		- Kernel Thread: Schedules directly into CPU
+	- Scheduling decisions
+		-
 - User Level Scheduling
 	- Idle processes are in a `READY` state
 	- All these user threads that are in `READY` state are in a queue, waiting to be given CPU time
@@ -23,7 +35,9 @@
 	- `Stop`: All other states except `ACTIVE` to `SLEEPING`.
 	- The OS does not know about User Level Threads. So when it blocks an syscall, it will actually block the LWP. So User-Level threads can never go from `ACTIVE` to `SLEEPING`. The User-Level Sync variable could be blocked and that could be a reason why the LWP gets blocked
 	- Try writing the state transition diagram as a (KERNEL STATE, USER STATE) tuple. There will be a 3x3 table.
-	- Much of the time, we will be scheduling User Level Threads on LWPs - Much less overhead than Kernel Level
+- Much of the time, we will be scheduling User Level Threads on LWPs
+	- Much less overhead than Kernel Level
+	- Because switching between threads can be done on user-space
 -
 - TODO Write a simple signal handler to capture an alarm periodically
 -
@@ -47,5 +61,6 @@
 		- Cross-Layer informations is vital for optimizations
 	- How do we achieve the first one without compromising on the second?
 	-
+- Reference Paper
 	-
 	-

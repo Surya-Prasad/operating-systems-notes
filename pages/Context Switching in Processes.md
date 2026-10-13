@@ -21,7 +21,13 @@
 		- If Process A is executing instr A1 and we want to switch to Process B (interrupt)
 		- So we need to interrupt A and then switch context, the procedure is asynchronous (Can happen at any time) - So we won't know when to save state!
 		- This is the purpose of Context Switching
-	- Similar to ISR - Interrupt Service Routine
+	- ISR - Interrupt Service Routine
+		- ISR is a mapping of what interrupt type (denoted by number) has to be serviced by what instruction
+		- When interrupt comes, and the process is in the middle of the instruction,
+			- The value of the PC is stored onto the stack
+			- The PC is updated with the the address of the routine to service the routine, from the ISR
+			- The routine is serviced, and then the top of the stack contains the address to return to
+			- So we pop off the top of the stack, and assign the value of the return address to the PC
 		- So A will run for X ms, then context switcher kicks in, and then B runs for Y ms
 		- When a process is created, the ISR table gets updated. The ISR table has a bunch of interrupts that will go off at the specified times
 	- When should a process get interrupted

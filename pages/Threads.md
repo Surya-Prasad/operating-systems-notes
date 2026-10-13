@@ -21,10 +21,10 @@
 	- Data can be shared - If you have data inconsistency, that is the program's problem, not the system's
 	- Heap can be shared - Same as the above, multiple mallocs are possible
 	- Stacks cannot be shared - The stacks have program states - lookup cactus stacks - StackOverflow
-- Switching between threads only switches the stacks (and registers - Because Number of Registers are Smol) - None of the CodeSeg gang gets changed
-	- Switching between processes is what would change CodeSeg gang
+- Switching between threads only switches the stacks (and registers - Because Number of Registers are Smol) - None of the context gets changed
+	- Switching between processes is what would change context
 - Sharing is implicit
-- There is no protection between processes in a thread - which is intended
+- There is no protection between threads in a process - which is intended
 -
 - PThread Library
 	- Types
@@ -39,6 +39,8 @@
 	- Can you create threads without actually using system calls?
 		- If we think about it, we just need context, not the resource of a process
 		- We don't need a system call for it, we can do it using assembly and C
+			- Define our own memory, stack and context
+			  Then use assembly for context switching
 		- Try it
 	- Multithreaded programs
 		- Programs always start as a process with a single thread
@@ -49,7 +51,7 @@
 			- We give the function pointer to pthread_create
 			- Now, we have different PCs in both the threads
 		- We now would be creating a new thread off the thread
-			- `pthread_read_create(&tid1, NULL, fn_ptr, (void *) 1);`
+			- `pthread_create(&tid1, NULL, fn_ptr, (void *) 1);`
 		- Now looking at each thread
 			- The find_max local variables are stored in their own stacks
 			- Each thread tries to find maximum element in a subsection of the total array
@@ -135,12 +137,21 @@
 				- Condition Variables with state (signals) preserved
 				- They preserve the signal
 				- They have a count variable which preserves the signal
+					- When V() is called, count++
+					- When P() is called, count--
+					- When P() is called and count <=0, thread blocked
+				- Boolean semaphores have 0 or 1 as the count (only one permit).
 				- Counting Semaphores (boolean semaphores) offer more flexibility
 				- Operations
 					- P() - Wait
 					- V() - Signal
 				- Invented by Dijkstra
 					- He's Dutch, so wait and signal mean P and V in Dutch
+				- Flow
+					- So now, when the threads calls a P() signal in the code when they try to get the token (permit), or wait until they do
+					- If they have the permit, they will then access the critical section
+					- If they are done, they call the V() signal and relinquish the permit
+					-
 	- Threads can be implemented on
 		- Single core
 		- Multicore/multisocket systems
@@ -159,7 +170,7 @@
 			- Advantages
 				- The OS just looks at User-Level threads as a single thread and if the thread needs more
 				- Kernel threads have better resource allocation
-					- If we have a 1000 threads and one of them is running the file read syscall, it will switch from a READY state to a LOCKED state; This will lock the remaining 999 threads;
+					- If we have a 1000 user threads and one of them is running the file read syscall, it will switch from a READY state to a LOCKED state; This will lock the remaining 999 threads;
 					- If this was created by the kernel, it will allocate the appropriate amount
 -
 -

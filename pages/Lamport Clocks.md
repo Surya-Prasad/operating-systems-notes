@@ -23,7 +23,7 @@
 	- Clocks are not easy to implement in a distributed system since not everyone sees a global clock to agree upon ordering of events. So there will be issues such as:
 		- Clock drift
 		- Measurement errors
-	- So we will use Causality to implement clocks - called Lampent Clocks
+	- So we will use Causality to implement clocks - called Lamport Clocks
 -
 - ## System Model
 	- **System** is a set of processes running concurrently across different nodes
@@ -46,11 +46,11 @@
 	- Associate a local clock $C_i$ with each process $P_i$
 	- And we want this to obey the partial order obtained earlier
 	- If $C_{i}(a) < P_{i}(a)$
-	- Each P_i increments it's C_i between any 2 successive local events
-	- If A is the sending of the message by Pi and B is the receipt of the message at Pj, then
+	- Each $P_i$ increments it's $C_i$ between any 2 successive local events
+	- If A is the sending of the message by $P_i$ and B is the receipt of the message at $P_j$, then
 		- If the timestamp of the receive is greater than send and the timestamp of the instruction preceeding it, let it be
 		- But if not, set it to that of send + 1
-		- Pj sets $C_j(B) = max(C_j, C_i(A) + 1)$
+		- Pj sets $C_j(B) = max(C_j, C_i(A)) + 1$
 	- Let us say that the system says that Event A with timestamp 3 happened before Event B on timestamp 8
 		- We cannot prove the system wrong here
 		- It could be that it executed it that way
@@ -60,6 +60,6 @@
 		- Sort all events based on their logical clock values
 		- When there are ties, use some deterministic rule to break those ties (eg: highest process id wins).
 	- We will get a total order from this
-		- But. there could be several total orders from the partial order specified by causaluty, but you cannot prove that events cannot happen that way
+		- But. there could be several total orders from the partial order specified by causality, but you cannot prove that events cannot happen that way
 		- So the "Right Order" does not matter, only that all of them agree on one
 	-

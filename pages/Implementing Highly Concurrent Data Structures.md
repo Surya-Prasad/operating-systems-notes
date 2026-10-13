@@ -22,7 +22,7 @@
 				- Largest number of steps that the system can take without any one thread successfully completing an operation in a non-blocking implementation
 				- So we assume that some thread will get it in system latency time
 			- Process Latency
-				- Largest number of steps that the system can take when all threads successfully complete an operation [CHECK THIS]
+				- Largest number of steps that the system can take without all threads successfully completing an operation in a wait-free implementation
 		- Pessimistic Concurrency Control:
 			- When we get a lock before trying to do something
 			- We assume everyone else is trying to do something and you try to get in before everyone else
