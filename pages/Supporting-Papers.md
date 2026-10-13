@@ -1,9 +1,9 @@
 ## *Scheduler Activations: Effective Kernel Support for the User-Level Management of Parallelism” (1992)*, by Anderson, Bershad, Lazowska, and Levy.
-	- Source: ![1-kernel-user.pdf](../assets/1-kernel-user_1791928307039_0.pdf)
 	- Core Idea:
 		- Kernel gives CPUs
 		- User runtime decides which threads execute
 		- Notifications keep them synchronized
+	- Source: ![1-kernel-user.pdf](../assets/1-kernel-user_1791928307039_0.pdf)
 	- User threads have quick switching and execution, but kernel cannot see them
 	- Kernel has blocking and preemption but overhead is high
 	- So *Scheduler Activations* provide execution context to execute threads on, a way for kernel to notify user runtime, storage for an interrupted thread's state
