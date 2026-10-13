@@ -7,7 +7,8 @@
 	- User threads have quick switching and execution, but kernel cannot see them
 	- Kernel has blocking and preemption but overhead is high
 	- So *Scheduler Activations* provide execution context to execute threads on, a way for kernel to notify user runtime, storage for an interrupted thread's state
-	- | Kernel | User runtime |
+	- Roles: 
+	  | Kernel | User runtime |
 	  |---|---|
 	  | Allocates CPUs among applications | Selects user threads for those CPUs |
 	  | Handles blocking, faults, and preemption | Maintains ready queues and synchronization |
