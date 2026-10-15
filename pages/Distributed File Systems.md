@@ -1,0 +1,36 @@
+# Naming
+	- When files are not local to us, we refer to them explicitly
+		- `machinename:/usr/home/...`
+		- But the problem is convenience, and hardcoding the location will make it so that if you switch machines, path will not be updated
+	- So we want location independence
+		- We also want to see the same namespace on all machines
+-
+- ## File Usage Characteristics
+	- Area started 40 years back in CMU, with a characterization study on how people use filesystems in the campus
+	- They found the following topics
+		- Size
+			- If we draw a probability density function of no of files vs size, the curve is inverse exponential
+			- Most of the files are very small (under 10KB)
+			- Network packetization is a lot of overhead, so we want to send them in one packet if possible
+			- We set transfer units accordingly
+		- Lifetime
+			- Defined as the time between creation and deletion of a file
+			- If we draw another PDF graph of no of files vs lifetime, we would get another inverse exponential, with a small lip of increase at the end
+			- This is because there are a lot of temporary files (compiler temporaries) that are created and killed outdwarf the amount of long-lived files
+			- The consequences of this are since our storage access calls are very expensive to call (in terms of time), we shouldn't be writing these temporary files on storage.
+			- But the underlying system does not know which files are temporary
+			- Do not propogate writes immediately. If within the delay, the files are not deleted, then we assume that they are needed
+		- Sharing
+			- The same file is accessed from multiple nodes -> Sharing
+			- Very few files are actually shared, because the user can only be in one place at any time
+			- So cases where two or more remote machines access the file is very rare
+			- If few files are shared, then we don't have to worry about Coherence
+			- The files that are widely shared, everyone needs it at all times
+				- The bootloader files - the ones in `/sys` or `/systemsys`
+				- Library files
+				- System Binaries
+				- Good point is that all of these are read-only means that we don't need to worry about coherence and also we don't have to worry about consistency
+			-
+				-
+			-
+			-
