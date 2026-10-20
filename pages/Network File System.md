@@ -92,4 +92,18 @@
 		- If timer expires, discard block and rerequest
 		- This is so that we can get frequent updated versions of the files
 		- 3 secs for data blocks, 30 sec for directory hooks - Files change faster than directories
+	- ### Delayed Write
+		- Once in a while (about 30 sec), flush all dirty blocks to the server
+		- TODO sync activity - do `man sync` on unix and see
+		- This builds on the sync activity
+	- ### Write Through
+		- Some writes are more important than others
+		- inode writes and directory writes on crash would bring up serious issues if on the 30 sec timer
+		- What happens if one file block is deleted, but that did not get flushed to disk, another file block got flushed to disk, then what happens?
+			- Both blocks would be pointing to one file
+		- TODO Check `fsck()` - File System Consistency Check
+			- Salvaging file systems etc
+			- Dangling/Orphan blocks
+			- Path of Least Damage
+		-
 		-
