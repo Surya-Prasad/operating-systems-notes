@@ -105,5 +105,14 @@
 			- Salvaging file systems etc
 			- Dangling/Orphan blocks
 			- Path of Least Damage
-		-
-		-
+-
+- So we have reduced severity, but there is still a problem that occurs
+- But we optimize for the file characteristics of size, lifetime and sharing
+- But NFS will write on close
+	- So temporary files will be propagated on close
+	- So we want a delayed write
+- But if we do a delayed write,
+	- We will not have reasonable illusion of consistency
+	- Data will be overly stale
+- We will discuss a non-commercial, research-based FS called the [[Sprite File System]] by UC Berkeley
+-

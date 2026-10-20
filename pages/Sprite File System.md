@@ -1,0 +1,35 @@
+- Provides Sequential Consistency
+	- Addresses this problem of NFS
+- Sequential consistency is only a problem when files are shared
+	- But as we saw in Sharing, very few files are actually shared in active sharing
+	- So, their argument is, why not provide Sequential Consistency since the case where the overhead is incurred is actually rare?
+-
+- ## Approach
+	- Identify two sharing patterns
+	- ### Sequential Write Sharing
+		- If, for whatever reason, people are actively sharing, it is in read mode
+		- If multiple clients have opened (and not closed), then they are all in read mode
+		- If a client has opened for write, then there are no other read/write opens.
+		- So we do not need to worry about consistency in this case
+		- Methodology:
+			- Server keeps the version number that is updated on each open for write
+			- This is given to client upon open. If client finds the blocks that are from the previous version, it discards those blocks
+			- The server keeps track of the last writer and asks that writer to write back blocks before serving the new client
+				- If P1 and P3 are sequentially sharing, and If P1 goes to server to read the blocks, but P3 has not pushed the blocks, then the server would not have the latest version.
+	- ### Concurrent Write Sharing
+		- When a write is going on, there could be other operations as well
+		- The problem that causes consistency is having multiple copies of the data. What would happen if we eliminate all copies of the data being actively shared?
+		- When the server detects this, it asks all clients to disable caching from then on -> All requests then go to server
+	- The server can detect sequential or concurrent write sharing at any point in time
+		- Because every open and close goes to server
+	- If the server detects concurrent write sharing, it tells all the clients to discard their blocks and do not cache the node
+	- So the clients will now access the one file in the server
+	- TODO Check reads and writes in a time
+	- Diagram
+	  ![image.png](../assets/image_1792522140052_0.png)
+	-
+-
+- Sprite does not enforce any one of these, these are application characteristics
+- The problem is that Sprite is not stateless
+	- It keeps track of the latest writer and all the files that are opened currently
+	- So anytime you give out sequential consistency, you have to either wipe out all caches or maintain state
