@@ -29,8 +29,66 @@
 				- The bootloader files - the ones in `/sys` or `/systemsys`
 				- Library files
 				- System Binaries
-				- Good point is that all of these are read-only means that we don't need to worry about coherence and also we don't have to worry about consistency
-			-
-				-
-			-
-			-
+				- Good point is that all of these are read-only means that we don't need to worry about coherence and also we don't have to worry about consistency, we can just replicate
+				- They only change once a month or once every three months
+	- Optimizations based on type
+		- System Binaries
+			- Rarely change
+			- Widely replicate
+		- Compiler files / temporaries
+			- Short, unshared , shortlived
+			- We keep them locally
+		- Mailboxes
+			- They are frequently updated, longer lifetime
+			- But rarely shared
+			- So they can be freely replicated
+-
+- # Client-Server File Systems
+	- Overall picture of this is
+		- Server
+			- Some server machine will be running fileserver, has lot of capacity, running a filesystem
+			- This offers DFS across network
+		- Clients
+			- Have their own OS
+		- This network file system is nothing but a very sophisticated usecase of RPCs
+		- NFS is basically an interface file which has a bunch of functions that the clients can avail
+	- For every read and write, if we go to server, we get a performance hit
+		- So we want to cache 'File Blocks' for optimizations
+		- Not file pages, that is for memory. This is blocks.
+-
+	- ## Consistency for Client Caches
+		- Implementing Sequential Consistency is a lot of overhead
+		- Do we really need sequential consistency?
+			- The W135 machines do not provide sequential consistency
+			- But if you make changes on one system, the other will reflect them
+			- This is sequential consistency, but this is achieved by session semantics
+		- Session Semantics
+			- All files are bound by open and close
+			- Any open for read after a subsequent close (for write) by another, will see those writes.
+			- If anyone opens after someone else closes, then the reads in this session will reflect the updated of that last session
+			- If the close did not happen, then the value read would be the old value
+			- When we modify something using vim and use `:w`, it would close the file and reopen it. That is what counts as saving.
+			- The semantics guarantees that if a close happens, everything that reads from the server after the close would be the latest value.
+		-
+	- ## Possibilities
+		- Immutable files
+			- You can never change contents of a file
+			- If you want to change, create a new file
+			- No consistency problem
+		- Centralized Control
+			- When there are Open-Close (O-C) pairs with read-write conflicts, stall till there is no conflict
+			- We cannot do reads and writes without O-C, unlike mutex, which is more like a suggestion
+			- So we can classify requests based on what kind of requests that come in.
+			- If R and R come in, let them in
+			  If R and W comes in , we could do behavior like make W wait
+		- Write through
+			- Propagate writes through to server immediately
+			- Consistency here is best effort
+			- So I'm not going to give you the latest value, but I will try my best - Not a guarantee but a lessening of severity (staleness here)
+			- But the problem is, you end up sending temporary files too if you immediately send -> Waiting is how you know that they are temporary in the first place
+		- Delayed Writes
+			- Write is propogated sometime in future
+		- Write on Close
+			- Write is propagated at the time of close
+	-
+	- So we want to send as soon as possible but we shouldn't send temporary files also -> balance between Write Through and consistency

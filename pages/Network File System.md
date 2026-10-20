@@ -1,2 +1,43 @@
 - NFS is basically an interface file which has a bunch of functions that the clients can avail
+- ## Definition
+	- An arbitrary (possibly heterogeneous) collection of clients and servers sharing file system
+	- Goals
+		- Machine and OS independence - Should run anywhere
+		- Crash Recovery - They wanted this to be highly resilient -> Should be a stateless system
+		- Reasonable Performance
 -
+- ## Exports and Imports
+	- We are not building an FS from scratch
+	- What we do is take a client filesystem, and make it a child of one of the server directory trees
+		- Look at `/etc/exports`
+		- This is called a mount mechanism
+		- Mount points can be anywhere, not just Users (Lab staff have been nice in W135)
+	- This is called a server that exports directories
+-
+- ## Mounting
+	- Very similar to RPCs
+		- Client sends message to server asking to mount a directory
+		- Server checks if the request is valid and returns back a handle to client (does not care where it is mounted)
+		- When should this be done?
+			- At client boot / Boot-Time Booting:
+				- Eg: `/etc/rc`
+				- rc script tells where to mount, what server to mount it in etc
+				- You might be unnecessarily mounting
+				- Resilience is impacted - If server is down and client did not boot up, gone
+			- Automounting:
+				- First reference to that file system
+				- We don't need to pre-mount anything
+				- Whenever there is an open call to something remote, it will start mounting
+	- The NFS is a very good example of an RPC mechanism
+		- The RPC call made is an industry standard
+		- The filesystem on Client makes an RPC call to server
+		- RPC call looks very similar to unix calls
+		- There isn't an explicit mechanism to open or close calls other than the starting call made
+-
+- ## Sun Microsystems' NFS
+	- ### Interface
+		- This is a commercial system, so for resilience, this is a stateless server
+			- In a normal FS, we have stateful information (pointers to inode, index table etc)
+			- The implications of stateless is that the server does not keep track of who opened files, where they are in a file, what file blocks they have etc
+			- As a consequence, every access needs to be self-contained. We cannot rely on the assumption that there is some information on the server to facilitate the access.
+			-
