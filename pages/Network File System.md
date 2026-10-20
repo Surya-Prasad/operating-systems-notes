@@ -40,4 +40,56 @@
 			- In a normal FS, we have stateful information (pointers to inode, index table etc)
 			- The implications of stateless is that the server does not keep track of who opened files, where they are in a file, what file blocks they have etc
 			- As a consequence, every access needs to be self-contained. We cannot rely on the assumption that there is some information on the server to facilitate the access.
-			-
+			- When the server does not have any information about who has what copies, it cannot do coherence in the first place
+		- Most calls have a file handle (returned by server)
+			- Similar to binding information in RPC
+			- The file handle is used in subsequent calls made to the server
+			- File handle: `handle = <filesys_id, inode_number, inode_generation_number>`
+				- `filesys_id` denotes the file system being referred to
+				- `inode_number` refers to which file is being referred to
+				- `inode_generation_number` refers to the latest inode update number
+					- Every inode (when the file is deleted), is deleted
+					- But inodes can be reused by another file
+					- In a scenario where I am creating a file, the server deletes the file, but another client creates a file that reuses that same inode, and when I access the file again, the inode being pointed to, is the wrong one
+					- Which is why we track when the inode is being updated using the inode generation number
+					- inode generation number is only updated monotonically, they cannot go back in time
+					- Getting inode of a file is non-trivial, since the iteration is made from the root, and it is cached in a table, and the index of the table is stored in the file descriptor
+			- The interface looks like 
+			  ```python(
+			  fh, attr) = lookup(dirfh, name)
+			  ...
+			  ```
+	- ### Implementation of the NFS
+		- Sun did not redesign the FS, they built on top of existing UNIX filesystems
+		- They added a 'v-node layer' on tope of the inode and the rnode
+			- What this does is figure out if the existing path belongs to the local or the remote server
+			- If the inode is local, then it creates a pointer to the table and it works like normal
+			- But if the inode is remote, it creates a pointer to the r-node
+			- The r-node then connects to the r-node of the remote machine using the interfaces that we saw before this
+			- Basically, an RPC client and server is created and implemented.
+		-
+- ## Flow
+	- Mount: Client sends a message to server asking for fh for that dir. When server returns fh, client kernel creates an r-node for it and makes the v-node point to it
+	- Based on FH, client vfs figures out whether it is to local system or remote
+	- Data Transfer happens in large chunks (~8k)
+	- Read ahead is usually performed (Read the next 8K after current read is done)
+	- *NFS DOES NOT GUARANTEE SEQUENTIAL CONSISTENCY*
+-
+- ## Steps taken to lessen Severity
+	- Since seq consistency is not guarantee, we do not want to live with old copies
+	- NFS takes some steps to lessen severity of the problem
+	- ### Every open is a call to the server
+		- When a cached file is opened, sendmessage to server to find when it was last modified.
+		- If it happened in your cached copy, then you discard your cached blocks.
+			- Just because you open a file, it does not mean that a cached copy does not exist
+			- Someone might have accessed it between your last write
+			- So client self-invalidates based on timestamps of last modification
+				- Client then discards blocks and rerequests from server
+	- ### Write on close
+		- Flush all dirty blocks to server at close
+	- ### Discard Block if not Dirty
+		- Whenever a block is brought from the server, a timer is associated with it
+		- If timer expires, discard block and rerequest
+		- This is so that we can get frequent updated versions of the files
+		- 3 secs for data blocks, 30 sec for directory hooks - Files change faster than directories
+		-
