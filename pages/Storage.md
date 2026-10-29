@@ -62,5 +62,10 @@
 - ## HDFS
 	- Hadoop File System
 	- [[Hadoop Distributed File System]]
-	-
+-
+- ## Log Structured File Systems
+	- The PhD student at Berkeley made a thesis on this
+		- Brother was the founder of VMWare
+		- Late 80s/Early 90s changed hardware
+			-
 	-

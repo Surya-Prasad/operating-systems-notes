@@ -34,5 +34,87 @@
 -
 - ## Locality
 	- We don't want to separate mapper and datanode apart, that increases network activity
-	- When we spawn mappers, we tell what is needed so that the
+	- When we spawn mappers, we tell what is needed so that the mapper is spawned close to datanode
+-
+- ## Replica Placement
+	- We can't keep replicas closeby
+	- First copy on node that is running the task
+	- But when data is created, we also make two other copies
+		- We do not want to put the copies on the same rack
+		- Find sweet spot to minimize latency
+		- MapReduce tasks are not latency sensitive tasks - if you don't crawl for one day it is okay
+			- So geographical fault tolerance is kinda tolerable, but not too unreasonable
+		- Put the second copy on a second rack
+		- Put the third copy on a different node in the second rack
+		- Typically controlled randomness on the rack for assigning nodes
+	- In Traditional NFS, block is in one place
+	  But here, it is there in 3 places
+	  Metadata has to track all this
+	- TODO Explore simultaneous reads, etc under different crawling scenarios -> There are different tradeoffs
+		- Caching as a reuse phenomena is very limited
+		- There is only spatial locality, not temporal locality
+	-
+- ## File I/O Write
+	- If we write to all 3 nodes, overhead
+	- We don't wait for 3 nodes to finish writing
+	- We wait for one of them to finish (ACK received) and then copy that write
+		- This can happen in the background without affecting that client
+-
+- ## Types of Failures
+	- ### Data Failures
+		- Data corruption
+			- Deal with this by checksum in metadata file of DataNode
+			- 1 bit-errors are detected and possibly fixed
+			- If checksum fails, go to a different copy
+		- Disk sector failure
+		- Cosmic particle that struck and changed the bit
+		- The file can become something else
+		- Data Loss
+			- Replication
+			- All data replication information is stored by namenode
+	- ### Node Failures
+		- Machine failure
+		- Rack/Switch failure
+		- DataNode Failure
+			- NameNode periodically receives a Heartbeat and a BlockReport from each of DataNodes in the cluster
+			- If not received in a certain amount of time, try to find a different node or schedule creation of new replicas of those blocks on other DataNodes
+		- NameNode Failure
+			- CheckpointNode
+			- BackupNode
+		- For MR
+			- Worker machine Failure
+				- Heartbeat: Mark the worker as failed if no response in a while
+				- Re-execution:
+					- The tasks are idempotent, no need to undo -> So you can just re-execute ->
+					- For Map tasks, Existing Progress can be discarded, that is okay
+					- For Reduce tasks, if the tasks are completed, then they don't need to be reexecuted -> THey are still idempotent, so they can be, in theory
+			- Master Machine Failure
+				- Periodic Checkpoints
+				- Aborts computation since failures are unlikely/rare
+	- ### Software/Input Bugs
+		- Self explanatory
+		- Task Failure
+			- Start up a new Task
+			- If stuck again, debug
+		- Input Failure
+			- If the bug is input sensitive, try twice or thrice, then if still persistant, just skip and move ahead
+			- Best solution is to debug and fix
+				- Not always possible third party source libraries
+			- If master sees two failures for same record, skip record and move on to next task
+- ### Performance Degradation/Soft-Failures
+	- Performance became slow -> Retries etc
+	- Stragglers
+		- Slow workers significantly delay the completion time
+			- Other jobs consuming resources on the machine
+			- For large number of tasks, the reduce phase is ultimately delayed
+		- Slow storage
+		- Idempotency works, just recreate the tasks and belt bro
+	- Solution
+		- Near end of phase, spawn backup tasks
+		- Do it proactively, because why not
+		- So spawn in bulk, if some fail, others will finish
+		- Whoever finishes first, wins
+	-
+	-
+	-
 	-
