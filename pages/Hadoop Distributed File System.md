@@ -34,5 +34,5 @@
 -
 - ## Locality
 	- We don't want to separate mapper and datanode apart, that increases network activity
-	- When we spawn mappers, we tell what is needed so that
+	- When we spawn mappers, we tell what is needed so that the
 	-
