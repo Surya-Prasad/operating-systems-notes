@@ -1,0 +1,52 @@
+## Introduction
+	- Called a Data-Centric Programming model
+	- Simple data-parallel programming model designed for scalability and fault tolerance on large cluster of commodity machines
+	- Highly Fault Tolerant
+		- Even if a few workers fail, I will simply designate (sometimes proactively) other workers to do it for me
+	- Pioneered by Google
+		- Processes 20 Petabytes of data per day
+	- Popularized by open-source Hadoop Project
+	- Two main steps
+		- Map
+			- An initial ingestion and transformative step, in which individual input records can be processed in parallel
+			- There is going to be a map where each worker would be doing a specific subset
+		- Reduce
+			- Once data is processed by a parallel worker, we need a summary of this
+			- An aggregation or summarization step in which all associated records must be processed together by a single/multiple entity
+-
+- ## Advantages
+	- Many problems can be phrased this way
+		- Parallel search (grep)
+		- Web indexing
+		- Counting
+	- Easy to distribute across nodes
+		- Map functions are data flow independent
+	- Retry/Failure semantics
+		- Since this is read many, write once, when crash happens, we do not need to undo any changes
+		- The application is not idempotent - After a crash, the function should be able to re-execute without any context. But we have nothing to undo here since many workers run
+		- We are not overwriting anything
+		- So programmers don't even need to worry about fault handling
+-
+- ## Programming Model
+	- ### Map (user)
+		- Input is key/value pairs
+		- Mapper does work
+		- Output is intermediate key/value pairs - Write only once
+	- ### Shuffle/Sort
+		- Group together all intermediate value associated with the same intermediate key and pass them to reducers
+		- Each mapper has it's own intermediate result locally -> Shufflers move this from mapper to the reducer
+	- ### Reduce (User)
+		- Input: Intermediate key and a set of values from that key
+-
+- ## Example of MapReduce
+	- We have a document with 3 lines of text
+	- We create 3 mappers here
+		- We are going to assign work for mappers by asking each mappers to take one line
+		- And they are going to get word count for each portion of the input
+		- Generate (key, value) pairs of (word, count) independently of each other
+	- Somehow we do aggregation now
+		- We choose to have 2 reducers somehow
+		- Then we tell each reducer which word they are responsible for
+		- Then it gets the records from the mappers to calculate (key, val) of (word, count) independently of other reduces
+		- The carrying over of the records from the mappers to the reducers is what shuffle is
+-

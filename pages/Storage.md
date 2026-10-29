@@ -1,3 +1,66 @@
-## Need for DataCenter Scale Computing
+- Need for DataCenter Scale Computing
 	- Data Centers are huge and the concepts that we have learnt in terms of distributed systems can be applied to them
-	- But we also can
+	- But we also can take advantage of the fact that they are next to each other
+- TODO Look up Jeffrey Dean at Google
+- Came up with MapReduce Programming paradigm
+- So we don't want to treat computing clusters like distributed systems, but rather give priority to coordinations
+-
+- ## Computing Requirements
+	- We call it Data-Center scale computing
+	- It is not exactly distributed, but it is not parallel either
+-
+- ## Data Centers
+- Racks
+- 1U servers, 2U servers etc - U is minimum unit
+- Before, the user had to go out in the market and get components myself, and build my system
+- Implications of community hardware
+	- Commodity cluster, hundreds/thousands of machines
+		- Failures are common - because we are statistically more prone to failure based on number of  (independent) machines
+	- Commodity Networking
+		- Bandwidth is a relatively scarce resource
+		- They are designed for small-term usecases, which do not have a lot of bandwidth
+		- Inexpensive disks are directly attached to machines
+			- Data Distributions, Load Balancing, availability
+- ### Workload Characteristics
+	- The computations are conceptually straightforward
+	- So they are suitable for parallelization
+		- Even for huge workloads, they are small, separable tasks
+		- So they can be separated and sent into their own separate machines
+		- Most workloads are like this
+		- Called Embarrassingly Parallel
+	- Write once, Read multiple times
+		- You don't keep writing something most of the time
+		- We see repeated reads, operations and writing occasionally
+		- Simple coherency model because of this
+-
+- For this, we would use [[MapReduce]]
+-
+- ## System Support for MapReduce
+	- So the user program starts execution
+	- And gets remotely forked to create workers, which are consequently used for mappers and reducers
+-
+- ## Hadoop
+	- At Google, MapReduce ops are run on a special file system called Google File System (GFS) that is highly optimized for this purpose
+		- They developed their own FS called GFS
+		- They found that the files created by the workers are extremely large
+	- Hadoop
+		- Core components are MapReduce Framework and Hadoop Distributed File System (HDFS)
+-
+- ## MR File Systems
+	- Deals with large files
+		- Long sequential reads, write once (or append) and read multiple times
+	- Scalability
+		- We don't want to somehow predetermine the size of a server or a rack - if it changes, then recomputations have to be done
+	- Computation close to data
+		- Latency should be extremely small
+		- So we minimize moving between machines and let computation happen close to data
+		- Cannot avoid disk cost, rather avoid network cost
+	- Dealing with Failure
+		- Fault tolerance should be high
+	- Google File System, Hadoop File System, etc
+-
+- ## HDFS
+	- Hadoop File System
+	- [[Hadoop Distributed File System]]
+	-
+	-

@@ -1,0 +1,38 @@
+## What it is
+	- Not meant to be used like a mailbox
+		- Not going to be a user sitting and requesting stuff
+		- Gonna be more like batch processing
+-
+- ## Architecture
+	- Consists of
+		- ### NameNode
+			- Single Namenode
+			- Provides metadata for the file
+			- Master server
+			- Keep entire namespace in RAM
+			- Single point of failure
+				- But we also have a Checkpoint Node which keeps track of progress
+				- Backup Node for fallback
+			- Namenode is only accessed once, not for every request, to get all metadata we need
+			- The backupnode and checkpoint node are only accessed when main namenode is not responding
+		- ### DataNodes
+			- Multiple DataNodes, for each block
+			- Not typical disk blocks, larger blocks, since we analyze data sequentially
+			- Components
+				- Handshake, registration and
+				- Heartbeat to the master
+					- Periodic pings to the master saying that it is alive
+				- Blocksize in 64MB (default), 128MB - Normal unix is in order of KB, for contrast
+				- Replication factor is 3 by default
+	- Exposes file system namespace and allows user data to be stored in files
+		- We are optimizing for throughput, so sequential reads
+		- Also optimizing for Fault tolerance, so redundancy
+	- HDFS Client
+		- Library that exports HDFS interface
+		- Has details of the RPC call made etc
+	- Usual operations: CRUD
+-
+- ## Locality
+	- We don't want to separate mapper and datanode apart, that increases network activity
+	- When we spawn mappers, we tell what is needed so that
+	-
