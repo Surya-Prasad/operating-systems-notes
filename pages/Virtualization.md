@@ -53,4 +53,25 @@
 -
 - ## Virtualization
 	- We have an interface available -> Can we provide an engineering solution (not a clean one) that provides us with an interface that we want?
-	-
+	- Possibilities
+		- Maybe the underlying hardware is x86, but the application and OS are compiled for RISC5
+		  logseq.order-list-type:: number
+		- Maybe the ISA is x86, and the linux I have is compiled for x86 but the application I have is compiled for a RISC5 system, but it still uses linux syscalls
+		  logseq.order-list-type:: number
+		- Maybe on some hardware, I have linux with an application running for RISC5 and I also have windows running an app compiled for RISC5 at the same time
+		  logseq.order-list-type:: number
+		- And more complex combinations like this
+		  logseq.order-list-type:: number
+-
+- ## Broad Classifications
+	- ### Process VMs
+		- eg: JVM
+		- Java itself is a virtualized compiler
+		- Guy Steele came up with Java and his goal with Java was to have a eternal programming language -> Runs anywhere
+		- Java is compiled not to the machine binary, but to a Java Intermediary Bytecode -> Their own software ISA and that is the code that is distributed
+		- To run the JIB, you need an interpreter for the bytecode and runs it
+		- Java Application -> Intermediary Bytecode <- Java VM
+		- The underlying system just emulates it
+		- The problem though is that there is no isolation
+			- JVM treats everything that is running as one process
+			-
