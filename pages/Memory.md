@@ -1,0 +1,19 @@
+### Overview
+	- Processor chips sit in sockets on motherboard, each called the CPU
+	- Each core executes it's own instructions, makes parallel execution possible
+- ### Memory Hierarchy
+	- Lower, faster memory for necessary data close to processing power
+	- SRAM
+		- L1 Caches
+			- Typically ~16KB
+		- L2 Caches and beyond
+			- Order of ~1MB
+		- Management is done by hardware, software is oblivious
+	- DRAM
+		- Very large -> 100GB to TBs
+		- Managed by OS
+-
+- ### Caches
+	- Figuring out if data is there in the data or not is a non-trivial problem
+	- The cache is broken down into blocks of contiguous bytes (32B - 128B). All decisions with cache lookup and placement are taken with respect to blocks, not individual byte granularity.
+	-

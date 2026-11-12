@@ -66,6 +66,45 @@
 - ## Log Structured File Systems
 	- The PhD student at Berkeley made a thesis on this
 		- Brother was the founder of VMWare
-		- Late 80s/Early 90s changed hardware
-			-
-	-
+		- Late 80s/Early 90s changed hardware for storage
+			- Seek is movement of head pointer: ~2-10ms today
+			- Spin is movement of disk - 15k rpm
+			- Seek has not improved in decades
+			- This means bandwidth is easier to get than latency -> The cost of getting a million bytes is faster than reading one
+			- So you put cache to cache what you read -> Addresses latency
+			- Memory was getting cheaper -> Capacity is more
+			- Caching helps for reads -> writes are still slow
+				- Memory is non-volatile
+				- Writing to cache does not solve the problem -> Can lose data
+				- Does not propagate to disk in reasonable time
+			- Redundant Arrays of Inexpensive Disks
+				- RAID for short
+				- Take multiple disks, take blocks and put them in different disks, send requests to different disks, we will get multiple blocks per request time
+				- We have a problem of failure when we have multiple disks -> Deal with it by redundancy -> RAID0, RAID1 - for metadata, RAID2, ...
+				- RAID5/RAID10
+					- For every 3 set of disks, add parity there (XOR all 3) and then read from these 3
+					- Raid 5 rotates the parity
+					  ```
+					  0	1	2	P
+					  3	4	P	5	
+					  6	P	7	8
+					  P	9	10	11
+					  ```
+					- So the location of P is staggered
+					- TODO ?? -> If we want to add new row, do XOR and then add P there
+					- Problem is, if there is a change in one byte, like say 4, then the Parity is also recomputed
+					- So the system has huge overhead when it comes to _small writes_
+			- All the arguments that we made here are applicable to SSDs also
+	- The Problem
+		- So Processor is getting faster than disk
+		- Storage Bandwidth can be improved by parallelism
+		- Storage latency is not improved as easily
+		- Problem is worse on i-nodes
+	- Example
+		- Create a file (assume you have directory i-node)
+			- Get free i-node, mark it used, insert name/time/
+			- Go to directory data block and insert the entry
+			- Get a free file block and write into this
+			- Update file i-node with pointer to this block and update modification time
+		- All these are small writes
+		- Performance will be terrible
