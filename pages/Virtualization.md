@@ -74,4 +74,53 @@
 		- The underlying system just emulates it
 		- The problem though is that there is no isolation
 			- JVM treats everything that is running as one process
+			- It means that there is no protection and everything is shared
+	- ### System VMs
+		- Each of the activities have an illusion of having the machine to themselves
+		- Eg: UML, Xen, VMWare
+-
+- ## Popek-Goldberg (1974)
+	- The paper has a fundamental theorem
+	- Proposes a 'sufficient condition' for a hardware to virtualize.
+	- Theorem states that 'Sensitive instructions should be a subset of privileged instructions'
+		- Sensitive Instructions:
+			- Those that change the state of the machine or depend on the state of the machine
+			- As opposed to those that only affect themselves
+		- Privileged Instructions:
+			- Can be executed only when the processor is in privileged mode
+			- And trap otherwise
+		- What it means
+			- If what you're going to do is only going to affect you, go and do it
+			- But if whatever you are doing is going to affect others, ask the OS to do it
+		- x86 Sensitive and Non-Privileged Instructions
+			- `CALL` - Calls the function -> Changes the PC -> But what if the PC points to code in another program -> Based on the Instruction!
+			- `MOV` - moves value from a location to another -> Based on the instruction!
+			- `JMP` - Jumping to PC inside code is fine -> But what if I jump to somewhere randomly in memory? -> Based on the instruction!
+			- So all these depend on _arguments_ to the instruction
+			- So the authors went through each instruction in x86 and listed 18 instructions that are _possibly sensitive_
+			- When any of the instructions become sensitive and the application tries to execute it, do not let it do that -> because sensitive instructions are a subset of the privileged instruction -> Trap it and let OS execute it.
+		- For example -> Let there be a target instruction -> Goes to Page Table -> But it can't see what is in there -> Trap triggers -> OS gets involved and verifies location -> Proceeds or throws error
+-
+- ## System Level VMs
+	- User Mode Linux (UML)
+		- Run Linux as a user-process (Guest) on top of native linux
+		- Access to system hardware goes through native (host) Linux
+		- Emulation
+			- The host HAS TO BE LINUX
+			- Guest also HAS TO BE LINUX
+		- We don't have to worry about ISA, Syscall compat etc
+		- The Guest Linux is actually a process for the host linux, just like there could be other processes for the host
+		- How would we implement a UML?
+			- The host does not know if this is a host or guest
+			- The process that run on the guest, do not know that the guest is running on the host
+			- So anything that the process wants to do. (say create a new thread) will pass through to the host
+			- Scheduling
+				- The guest will just tell the processes to stop running using signals
+				- Use signals to do management
+			- Memory Management
+				- Allocation, swapping, free
+				- Create shared MMAPs between each process so that whenever a process needs memory, so that we can MPROTECT against how much memory each process actually needs
+			- TODO IOs
+				- Use passthroughs
+			-
 			-
