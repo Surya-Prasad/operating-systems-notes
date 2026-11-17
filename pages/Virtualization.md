@@ -128,7 +128,7 @@
 		- The more the rings, the more efficient it is
 		- Ring 0 is most privileged, privilege decreases as it goes up
 		- In User mode Linux, the guest linux itself is a process and it runs on a higher ring number when compared to host, which runs on ring 0
-	- ### Para-Virtualization: Zen
+	- ### Para-Virtualization: Xen
 		- Open Source
 		- Got popular in 2000s
 		- In UML, we try to keep OS as is - We could modify, but we don't
@@ -140,7 +140,37 @@
 		- VMM - Virtual Machine Monitor
 			- A thin layer that takes traps and passes on things
 			- It's like a passthrough or a demux machanism for traps
-		- There is some application that might want to be run on a Linux, but the linux that I want to run on, is modified - This is now called Zen Linux, it has been Zen'd, it has been Zenified
-		-
-		-
+		- There is some application that might want to be run on a Linux, but the linux that I want to run on, is modified - This is now called Xen Linux, it has been Xen'd, it has been Xenified
+		- This tries to use as few sensitive instructions as possible
+		- The Xenified linux has as few drivers as possible, and they are all fake drivers that call the underlying VMM and passes through to execute the instructions
+		- The implement this by creating a separate VM that has permissions to access the host/hardware. They make calls to this VM and this VM accesses the hardware.
+		- Only trap when absolutely needed - somewhat more efficient
+		- There are zenified versions of OSes
+		- Called Paravirtualization because the guest OS is not a Stock OS, it is reengineered version of the OS
+		- All it does is take traps, handle traps and passthrough
+		- #### Xen on x86 Rings
+			- Ring Structure
+				- VMM on Ring 0
+				- Xenified OS - Ring 1
+				- Ring 2 - Unused
+				- Ring 3 - Guest Processes
+			- Precursor to UNIX was MULTIX
+				- Multix required 64 rings
+				- Proposed in 1960s
+				- Hardware did not support 64 rings
+				- Whenever you go from one ring to another, you had to trap - so complex that they could not boot even
+				- So they founded UNIX
+	- ## VMWare ESX Server
+		- Dynamically Monitor and Modify the OS
+		- How do you translate between different systems
+		- What we do is, we take each instruction and then translate the instructions - Called Simulation
+		- We can take the different ISAs and rewrite them via compilation - called Cross Compilation
+			- The problem is, we have binaries. We don't have a rosetta stone to translate so very risky
+		- So they said that let them start running
+			- So let us say we are running x86 on an ARM
+			- It starts running but gets trapped because it is an x86 instruction on an ARM processor
+			- So it calls VMM
+			- Every instruction gets trapped --> VMM is called and emulation happens
+			- But the overhead is almost x100
+		- So to optimize, they give something called binary program optimization
 		-
