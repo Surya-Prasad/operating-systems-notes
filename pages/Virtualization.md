@@ -164,7 +164,7 @@
 		- Dynamically Monitor and Modify the OS
 		- Either emulation or dynamic binary modification
 		- Traps generated for sensitive instructions in Guest OS, that get translated/emulated/over-written
-		- However, optimize for the common case/repeated use to avoid
+		- However, optimize for the common case/repeated use to avoid such traps
 		- How do you translate between different systems
 		- What we do is, we take each instruction and then translate the instructions - Called Simulation
 		- We can take the different ISAs and rewrite them via compilation - called Cross Compilation
@@ -185,6 +185,16 @@
 		- If there are 2 variables that have conflicting values in the cache
 			- Can Compile time catch it? No
 			- Runtime? Theoretically yes -> Gotta remap -> Some compilers can do this
+		- OSes have hierarchical page tables
+			- Easier to trim entries where there are empty contents
+			- So there are 4 level page tables
+				- just doing binary translation of the instruction is not going to account for address mismatches and the traversal of the page tables are going to incur overhead
+				- So they fake the page tables
+				- I will provide the page tables for you to manipulate but they are not the actual page tables -> called shadow page tables
+				- Till you need something from the actual page table (a physical translation), you will execute -> You then trap, host reads and puts it in the TLB -> So program goes through the entire thing without actually needing the actual page table.
+				- Only the host will be manipulating the actual page table
+				- The page is also called the virtual page (VP) -> Goes through an intermediate type called the physical page (PP) and is then the host reads it as the machine page (MP)
+		- VMWare does not need a single translation of the application -> Will just work
 		-
-			-
-		-
+	- ## VMWare ESX on x86 Rings
+		- Just needs dynamic binary modification -> Does not need extra rings
