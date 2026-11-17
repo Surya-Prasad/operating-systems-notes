@@ -1,0 +1,27 @@
+## Applications on the Cloud
+	- Cloud Computing has made it so that you don't even need VMs while running cloud systems
+	- Say, take Databases
+		- They do not like OSes
+		- They index using some structure like B-Trees etc -> They do not use pages
+		- They say "Gimme the hardware/disk, lemme manage"
+		- OSes and DBs do buffer management very differently
+		- Filesystems have a default prefetcher that is very different from DB
+			- Paper that says why a DB should never be run on an OS
+			- Turing award winner
+	- So to work with these, I say "Gimme an image (I don't care what is in it) and I should be able to run it in bare-metal"
+	- Virtualization is used now to not only host different architectures, but also to outsource my hardware
+	- From the cloud POV, they make their money by consolidation
+		- Server consolidation is where you put as many workloads as possible in one machine
+		- So we need enough capacity and different architecture support -> Virtualization
+	- Until 10 years ago, ESX style of virtualization was very predominant
+		- And on the cloud, my cloud provider is going to run this
+		- Problem is that each VM becomes heavyweight -> can't pack as many things as possible in one server
+		- Also overheads are heavier -> Switching between VMs etc
+		- So let us take one session -> Dies after say 1 hour
+		  But if there is a need for an extension -> Is going to be expensive to spin a VM up after another hour
+		- If we take a load vs time graph
+			- Say we have a store that runs a cloud based page based on load
+			- If there is a spike in user engagement, a new VM might be needed and if it decreases, it needs to be killed
+			- But ESX style would mean a new VM needs to be created every ms -> Which means you would always need to request the highest number of VMs possible
+			-
+		-
