@@ -162,6 +162,9 @@
 				- So they founded UNIX
 	- ## VMWare ESX Server
 		- Dynamically Monitor and Modify the OS
+		- Either emulation or dynamic binary modification
+		- Traps generated for sensitive instructions in Guest OS, that get translated/emulated/over-written
+		- However, optimize for the common case/repeated use to avoid
 		- How do you translate between different systems
 		- What we do is, we take each instruction and then translate the instructions - Called Simulation
 		- We can take the different ISAs and rewrite them via compilation - called Cross Compilation
@@ -172,5 +175,16 @@
 			- So it calls VMM
 			- Every instruction gets trapped --> VMM is called and emulation happens
 			- But the overhead is almost x100
-		- So to optimize, they give something called binary program optimization
+		- So to optimize, they give something called dynamic binary modification
+			- The original program seems to be compiled for ARM rather than x86
+			- In 1999 is when this ESX Server came out, called SimOS
+				- Openly distributed
+				- Silicon Graphics was a company that used to run MIPS processors
+				- But there were no processors that ran on MIPS processors
+				- The binary in the program get overwritten with ARM instructions
+		- If there are 2 variables that have conflicting values in the cache
+			- Can Compile time catch it? No
+			- Runtime? Theoretically yes -> Gotta remap -> Some compilers can do this
+		-
+			-
 		-
