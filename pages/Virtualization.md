@@ -102,7 +102,7 @@
 		- For example -> Let there be a target instruction -> Goes to Page Table -> But it can't see what is in there -> Trap triggers -> OS gets involved and verifies location -> Proceeds or throws error
 -
 - ## System Level VMs
-	- User Mode Linux (UML)
+	- ### User Mode Linux (UML)
 		- Run Linux as a user-process (Guest) on top of native linux
 		- Access to system hardware goes through native (host) Linux
 		- Emulation
@@ -122,5 +122,25 @@
 				- Create shared MMAPs between each process so that whenever a process needs memory, so that we can MPROTECT against how much memory each process actually needs
 			- TODO IOs
 				- Use passthroughs
-			-
-			-
+	- ### UML on x86 Rings
+		- The other name for modes is rings
+		- x86 has 4 rings
+		- The more the rings, the more efficient it is
+		- Ring 0 is most privileged, privilege decreases as it goes up
+		- In User mode Linux, the guest linux itself is a process and it runs on a higher ring number when compared to host, which runs on ring 0
+	- ### Para-Virtualization: Zen
+		- Open Source
+		- Got popular in 2000s
+		- In UML, we try to keep OS as is - We could modify, but we don't
+			- Here they say - Let us try not to run the default OS
+			- What if the OS has a lot of sensitive information, we keep on trapping
+			- We take the default OS and then we start modifying the OS - This new guest OS that we have will not be as bad as the eventual process that is to be run, will have a little more privilege than the process, but will still have lesser privileges than host OS
+		- This means that the guest OS will no longer be a Stock OS
+		- So the guest will do as many operations as possible until it hits a trap and has to switch over
+		- VMM - Virtual Machine Monitor
+			- A thin layer that takes traps and passes on things
+			- It's like a passthrough or a demux machanism for traps
+		- There is some application that might want to be run on a Linux, but the linux that I want to run on, is modified - This is now called Zen Linux, it has been Zen'd, it has been Zenified
+		-
+		-
+		-
